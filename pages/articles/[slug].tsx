@@ -1,47 +1,19 @@
+import { Article } from ".contentlayer/types";
 import Page from "components/pages/articles/[slug]";
 import {
   getAllArticles,
   getCurrentArticle,
   getNextArticles,
 } from "lib/get-articles-data";
-import getMdxData from "lib/get-mdx-data";
 import { GetStaticPaths, GetStaticProps, NextPage } from "next";
-import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
-import dynamic from "next/dynamic";
-import Article from "types/article";
-import frontMatter from "types/frontMatter";
-
-const Callout = dynamic(
-  () => import(/* webpackChunkName: "Callout" */ "components/mdx/callout")
-);
-
-const Image = dynamic(
-  () => import(/* webpackChunkName: "Image" */ "components/mdx/image")
-);
-
-const components = { Callout, img: Image };
 
 interface IProps {
-  mdxSource: MDXRemoteSerializeResult<Record<string, unknown>>;
-  frontMatter: frontMatter;
-  source: string;
+  mdxSource: Article;
   nextArticles: Article[];
 }
 
-const ArticlesSlugPage: NextPage<IProps> = ({
-  mdxSource,
-  frontMatter,
-  source,
-  nextArticles,
-}) => {
-  return (
-    <Page
-      content={<MDXRemote {...mdxSource} components={components} />}
-      frontMatter={frontMatter}
-      source={source}
-      nextArticles={nextArticles}
-    />
-  );
+const ArticlesSlugPage: NextPage<IProps> = ({ mdxSource, nextArticles }) => {
+  return <Page article={mdxSource} nextArticles={nextArticles} />;
 };
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -50,7 +22,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
     paths: getAllArticles().map((article) => {
       return {
         params: {
-          slug: article.data.slug,
+          slug: article.slug,
         },
       };
     }),
@@ -58,14 +30,12 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const { data, content } = getCurrentArticle(params);
+  const currentArticle = getCurrentArticle(params);
   const nextArticles = getNextArticles(params);
 
   return {
     props: {
-      mdxSource: await getMdxData(content),
-      frontMatter: data,
-      source: content,
+      mdxSource: currentArticle,
       nextArticles,
     },
   };

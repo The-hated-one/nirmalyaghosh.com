@@ -1,4 +1,9 @@
-import mdxOptions from "./config/mdx";
+import rehypeAutolinkHeadings from "rehype-autolink-headings";
+import remarkCodeTitles from "./lib/remark-code-titles";
+import remarkExternalLinks from "remark-external-links";
+import remarkSlug from "remark-slug";
+import { remarkVscode } from "gatsby-remark-vscode";
+import rehypeImgSize from "rehype-img-size";
 import {
   defineDocumentType,
   makeSource,
@@ -29,6 +34,7 @@ export const Keyword = defineNestedType(() => ({
 export const Article = defineDocumentType(() => ({
   name: "Article",
   filePathPattern: `articles/*.mdx`,
+  bodyType: "mdx",
   fields: {
     title: { type: "string", required: true },
     slug: { type: "string", required: true },
@@ -63,5 +69,26 @@ export const Guide = defineDocumentType(() => ({
 export default makeSource({
   contentDirPath: "data",
   documentTypes: [Article, Guide],
-  mdx: mdxOptions,
+  mdx: {
+    remarkPlugins: [
+      remarkSlug,
+      // remarkCodeTitles,
+      remarkExternalLinks,
+      // [
+      //   remarkVscode.remarkPlugin,
+      //   {
+      //     theme: "Tomorrow Night Blue",
+      //   },
+      // ],
+    ],
+    rehypePlugins: [
+      rehypeAutolinkHeadings,
+      [
+        rehypeImgSize,
+        {
+          dir: "public",
+        },
+      ],
+    ],
+  },
 });
